@@ -30,6 +30,10 @@
 		reverse_proxy {$FRONTEND_HOST} # proxy all requests for /api/* to the backend, configure this variable in the service settings
 	}
 
+	handle_path /_next/* {
+        	reverse_proxy {$FRONTEND_HOST}
+        }
+
 	# if your backend's api routes do start with /api/ then you wouldn't want to strip the path prefix
 	# if so, comment out the above handle_path block, and uncomment this reverse_proxy directive
 	# change paths as needed
