@@ -25,7 +25,9 @@
 	# the handle_path directive will strip /api/ from the path before proxying
 	# this is needed if your backend's api routes don't start with /api/
 	# change paths as needed
-	handle_path /v1* {$BACKEND_HOST}
+	handle_path /v1* {
+		reverse_proxy {$BACKEND_HOST}
+	}
 
 	reverse_proxy /v2* {$FRONTEND_HOST}
 	reverse_proxy /api* {$FRONTEND_HOST}
