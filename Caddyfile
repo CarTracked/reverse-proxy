@@ -1,38 +1,34 @@
-# global options
 {
-    admin off              # no need for the admin api in railway's environment
+    admin off              # no need for the admin API in Railway's environment
     persist_config off     # storage isn't persistent anyway
-    auto_https ofttps for us
-✻ Worked for 1m 33s
+    auto_https off         # Railway handles HTTPS for us
 
-❯ Give me the entire caddy file please. in an easy copy
-
-caddy
-# global options
-{
-    admin off              # no need for the admin api in
-railway's environ
-    persist_config off     # storage isn't persistent anyway
-    auto_https off         # railway handles https for us
     log {
         format json
     }
+
     servers {
-        trusted_proxies static private_ranges  # trust railway's proxy
+        trusted_proxies static private_ranges
     }
 }
 
-# site block, listens on the $PORT env var assigned by railway
+# Site block, listens on the $PORT env var assigned by Railway
 :{$PORT} {
-    log { format json }
 
-    # Bare domain (and anything at the root) -> the app's real landing page.
-    # There is no2/dashboarddirectly.
-    redir / /v2/dashboard 302
+    log {
+        format json
+    }
 
-    # Everything
-    # basePath "/v2" means pages, /v2/api/*, and /v2/_next/* all
-live here,
-    # and Clerk auth routing is handled internally by Next.
-    reverse_proxy
+    # Redirect the bare domain to the application's landing page.
+    @root path /
+    redir @root /v2/dashboard 302
+
+    # Everything else is proxied to the frontend.
+    # With Next.js configured with basePath "/v2", this includes:
+    #   /v2
+    #   /v2/dashboard
+    #   /v2/api/*
+    #   /v2/_next/*
+    # Clerk authentication routes are handled by Next.js.
+    reverse_proxy {$FRONTEND_HOST}
 }
