@@ -15,34 +15,31 @@
 
 # site block, listens on the $PORT environment variable, automatically assigned by railway
 :{$PORT} {
-	# access logs
-	log {
-		format json # set access log format to json mode
-	}
+    log { format json }
 
-	reverse_proxy {$BACKEND_HOST} # proxy all requests for /* to the frontend, configure this variable in the service settings
+    # New Next.js app (served under /v2 basePath) — plus its api & static assets
+    handle /v2* {
+        reverse_proxy {$FRONTEND_HOST}
+    }
+    handle /api* {
+        reverse_proxy {$FRONTEND_HOST}
+    }
+    handle /_next* {
+        reverse_proxy {$FRONTEND_HOST}
+    }
 
-	# the handle_path directive will strip /api/ from the path before proxying
-	# this is needed if your backend's api routes don't start with /api/
-	# change paths as needed
-	handle_path /v1* {
-		reverse_proxy {$BACKEND_HOST}
-	}
+    # Legacy Java backend API
+    handle /v1* {
+        reverse_proxy {$BACKEND_HOST}
+    }
 
-	reverse_proxy /v2* {$FRONTEND_HOST}
-	reverse_proxy /api* {$FRONTEND_HOST}
+    # Anyone landing on the bare domain → into the new app's home
+    handle / {
+        redir /v2/dashboard 302
+    }
 
-	# handle_path /v2* {
-		# this strips the /api/ prefix from the uri sent to the proxy address
-	#	reverse_proxy {$FRONTEND_HOST} # proxy all requests for /api/* to the backend, configure this variable in the service settings
-	# }
-
-	handle_path /_next/* {
-		reverse_proxy {$FRONTEND_HOST}
-	}
-
-	# if your backend's api routes do start with /api/ then you wouldn't want to strip the path prefix
-	# if so, comment out the above handle_path block, and uncomment this reverse_proxy directive
-	# change paths as needed
-	# reverse_proxy {$BACKEND_HOST} # configure this variable in the service settings
+    # Everything else still falls through to the old app (until full cutover)
+    handle {
+        reverse_proxy {$BACKEND_HOST}
+    }
 }
