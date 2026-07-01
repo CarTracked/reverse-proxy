@@ -1,45 +1,38 @@
 # global options
 {
-	admin off # theres no need for the admin api in railway's environment
-	persist_config off # storage isn't persistent anyway
-	auto_https off # railway handles https for us, this would cause issues if left enabled
-	# runtime logs
-	log {
-		format json # set runtime log format to json mode 
-	}
-	# server options
-	servers {
-		trusted_proxies static private_ranges # trust railway's proxy
-	}
+    admin off              # no need for the admin api in railway's environment
+    persist_config off     # storage isn't persistent anyway
+    auto_https ofttps for us
+✻ Worked for 1m 33s
+
+❯ Give me the entire caddy file please. in an easy copy
+
+caddy
+# global options
+{
+    admin off              # no need for the admin api in
+railway's environ
+    persist_config off     # storage isn't persistent anyway
+    auto_https off         # railway handles https for us
+    log {
+        format json
+    }
+    servers {
+        trusted_proxies static private_ranges  # trust railway's proxy
+    }
 }
 
-# site block, listens on the $PORT environment variable, automatically assigned by railway
+# site block, listens on the $PORT env var assigned by railway
 :{$PORT} {
     log { format json }
 
-    # New Next.js app (served under /v2 basePath) — plus its api & static assets
-    handle /v2* {
-        reverse_proxy {$FRONTEND_HOST}
-    }
-    handle /api* {
-        reverse_proxy {$FRONTEND_HOST}
-    }
-    handle /_next* {
-        reverse_proxy {$FRONTEND_HOST}
-    }
+    # Bare domain (and anything at the root) -> the app's real landing page.
+    # There is no2/dashboarddirectly.
+    redir / /v2/dashboard 302
 
-    # Legacy Java backend API
-    handle /v1* {
-        reverse_proxy {$BACKEND_HOST}
-    }
-
-    # Anyone landing on the bare domain → into the new app's home
-    handle / {
-        redir /v2/dashboard 302
-    }
-
-    # Everything else still falls through to the old app (until full cutover)
-    handle {
-        reverse_proxy {$BACKEND_HOST}
-    }
+    # Everything
+    # basePath "/v2" means pages, /v2/api/*, and /v2/_next/* all
+live here,
+    # and Clerk auth routing is handled internally by Next.
+    reverse_proxy
 }
