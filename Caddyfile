@@ -19,9 +19,9 @@
         format json
     }
 
-    # Redirect the bare domain to the application's landing page.
-    @root path /
-    redir @root /v2/dashboard 302
+    # Redirect the bare domain and /index to the application's landing page.
+    @landing path / /index
+    redir @landing /v2/dashboard 302
 
     # Everything else is proxied to the frontend.
     # With Next.js configured with basePath "/v2", this includes:
