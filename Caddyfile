@@ -19,6 +19,10 @@
         format json
     }
 
+    # Redirect legacy login URLs to the new sign-in page.
+    @oldLogin path /login /login/*
+    redir @oldLogin /v2/sign-in 308
+
     # Redirect the bare domain and /index to the application's landing page.
     @landing path / /index
     redir @landing /v2/dashboard 302
